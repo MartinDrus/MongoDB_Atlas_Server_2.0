@@ -25,6 +25,8 @@ app.use(cors({
 }));
 
 // --------------------- ROUTES -------------------------
+app.get('/', (req, res) => res.send("Server is running!"))
+
 app.use('/auth', authRouter);
 
 app.use('/protected', protectedRouter);
