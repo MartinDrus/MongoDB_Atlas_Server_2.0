@@ -33,26 +33,19 @@ export async function getById(id) {
 }
 
 export async function insertNew(blogBody) {
-  try {
-    let post = await new BlogPost(blogBody);
-    return await post.save();
-  } catch (error) {
-    // Pruefe, ob Conflict durch Dupletten-Verletzung
-    if (error.hasOwnProperty("code") && error.code === 11000) {
-      // Schmeisse entsprechendes Fehlerobjekt
-      throw {
-        code: 409,
-        message: error.message,
-      };
-    } else {
-      // Muss ein Validierungsproblem sein
-      // Schmeisse entsprechendes Fehlerobjekt
-      throw {
-        code: 400,
-        message: error.message,
-      };
+    try {
+        let post = await new BlogPost(blogBody);
+        return await post.save();
+    } catch (error) {
+        // Pruefe, ob Conflict durch Dupletten-Verletzung
+        if ( (error.hasOwnProperty('code')) && (error.code === 11000) ) {
+            throw new Error(`${error.message}`, {cause: 409})
+        } else {
+            // Muss ein Validierungsproblem sein
+            // Schmeisse entsprechendes Fehlerobjekt
+            throw new Error(`${error.message}`, {cause: 400}) 
+        }
     }
-  }
 }
 
 export async function updateById(postId, authorId, blogPostBody) {
@@ -60,18 +53,11 @@ export async function updateById(postId, authorId, blogPostBody) {
 
     post.editedBy.push({author: authorId, updated: Date.now()});
 
-    if (blogPostBody.title) {
-        post.title = blogPostBody.title;
-    }
-
-    if (blogPostBody.text) {
-        post.text = blogPostBody.text;
-    }
-
+    if (blogPostBody.title) post.title = blogPostBody.title;
+    if (blogPostBody.text) post.text = blogPostBody.text;
+    
     return await post.save();
 }
-
-
 
 export async function deleteById(postId, authorId, authorRole) {
     let post = await getById(postId);

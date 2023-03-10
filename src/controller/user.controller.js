@@ -1,12 +1,25 @@
 import * as UserModel from "../model/user.model.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
+import sendVerificationEmail from '../service/mailVerification.js';
+import md5 from 'md5';
+
 
 // Controller Funktion zum Anlegen neuer User
 export async function registerNewUser(req, res) {
     let body = req.body;
 
-    // Ueberschreibe password-Property im body mit dem Hash des Passworts
+    // Generating a random String
+    const salt = await bcrypt.genSalt(10);
+    // Hashing the String
+    const verificationToken = md5(salt);
+    // Including Token to User DB
+    body.verificationHash = verificationToken;
+
+    // Sending mail 
+    sendVerificationEmail(body.email, verificationToken)
+
+    // Overwriting password-Property im body mit dem Hash des Passworts
     body.password = bcrypt.hashSync(body.password, 10);
 
     try {
@@ -90,6 +103,45 @@ export async function updateUser(req, res){
         
     } catch (error) {
         res.send(error)
+    }
+
+}
+
+export async function editOwnProfile(req, res) {
+
+    const userId = req.tokenPayload.userId;
+    let body = req.body;
+
+    let newBody = {
+        username: body.username,
+        fullname: body.fullname,
+        password: body.password,
+        city: body.city
+    }
+
+    try {
+
+        let response = await UserModel.modifyUser(userId, newBody)
+        res.send(response)
+        
+    } catch (error) {
+        res.send(error)
+    }
+
+
+}
+
+export async function verifyEmail(req, res, next) {
+    const emailToken = req.query.t;
+
+    try {
+        
+        await UserModel.verifyUser(emailToken);
+        res.status(200).send({})
+
+    } catch (error) {
+        if(!error.cause) res.status(400).send(error.message)
+        else res.status(error.cause).send(error.message)
     }
 
 }

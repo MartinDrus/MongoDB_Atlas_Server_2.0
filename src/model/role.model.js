@@ -13,7 +13,8 @@ const Role = mongoose.model('Role', roleSchema);
 export const rolesEnum = {
     admin: 'admin',
     user: 'user',
-    author: 'author'
+    author: 'author',
+    unverified: 'unverified'
 };
 
 
@@ -42,6 +43,13 @@ export async function seedRoles() {
         name: rolesEnum.author
     });
     await authorRole.save();
+
+    // Neue Rolle fuer author
+    const verificationRole = new Role ({
+        _id: new ObjectId('6405ac7d6b2564cd76c42606'),
+        name: rolesEnum.unverified
+    });
+    await verificationRole.save();
 }
 
 

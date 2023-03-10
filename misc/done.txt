@@ -1,0 +1,11 @@
+
+
+added Packages: 
+- md5
+- nodemailer
+
+added verification
+added role: unverified
+
+Worked on Comments
+

@@ -1,12 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connectToDb } from './service/db.service.js';
+
 import authRouter from './routes/auth.route.js';
 import protectedRouter from './routes/protected.route.js';
 import blogpostRouter from './routes/blogpost.route.js'
 
+import { connectToDb } from './service/db.service.js';
 import { seedRoles } from './model/role.model.js';
+import { startMailService } from './service/mailVerification.js';
 
 
 // Lade Umgebungsvariablen (engl. enviroment variables) aus der .env Datei
@@ -25,7 +27,6 @@ app.use(cors({
 }));
 
 // --------------------- ROUTES -------------------------
-app.get('/', (req, res) => res.send("Server is running!"))
 
 app.use('/auth', authRouter);
 
@@ -36,6 +37,9 @@ app.use('/blogposts', blogpostRouter);
 // Einmalig Verbindung ueber default Connection aufbauen
 // Uebergebe Seeding-Funktion zum Einfuegen von Userrollen
 await connectToDb(seedRoles);
+
+await startMailService();
+
 
 // ----------------------------------------------------------
 // Starte Server auf in der Config hinterlegtem Port
